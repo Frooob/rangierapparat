@@ -1,5 +1,5 @@
-from rangierlib.ablauf import rangier_vorwaerts
-from rangierlib.ausparken import ausparkvorgang
+from .rangierlib.ablauf import rangier_vorwaerts
+from .rangierlib.ausparken import ausparkvorgang
 
 
 def translate_action(action):
