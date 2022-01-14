@@ -1,17 +1,20 @@
+import math
+
 from .rangierlib.ablauf import rangier_vorwaerts
 from .rangierlib.ausparken import ausparkvorgang
 
+def angle_to_distance(action, car_rad):
+    if action[1] in ["rechts", "links"]:
+        # Wenn 2 pi = pi * 2 * d sind, dann
+        distance = action[2] * car_rad
+    else:
+        distance = action[2]
+        
+    return (action[0], action[1], distance)
 
 def translate_action(action):
     front_back = "vorwärts" if action[0] == "rückwärts" else "rückwärts"
-    if action[1] == "links":
-        direction = "rechts"
-    elif action[1] == "rechts":
-        direction = "links"
-    else:
-        direction = "geradeaus"
-        
-    return (front_back, direction, action[2])
+    return (front_back, action[1], action[2])
 
 class Rangierer():
     def __init__(self, w=.19, f=.33, b=.05, r=.658, p=.05, l=.45):
@@ -36,10 +39,10 @@ class Rangierer():
         self.actions=[]
         final_x = self.calculate_actions()
         
-        self.einpark_actions = self.actions[::1]
-        self.einpark_actions = [translate_action(action) for action in self.einpark_actions]
+        self.einpark_actions = self.actions[::-1]
+        self.einpark_actions = [angle_to_distance(translate_action(action),self.r) for action in self.einpark_actions]
         self.einpark_actions.insert(0, ("vorwärts", "geradeaus", final_x))
-        self.auspark_actions = self.actions
+        self.auspark_actions = [angle_to_distance(action, self.r) for action in self.actions]
     
     def calculate_actions(self):
         car_pos_nach_rangieren, alpha_nach_rangieren = rangier_vorwaerts(
