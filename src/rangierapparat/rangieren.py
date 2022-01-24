@@ -17,7 +17,8 @@ def translate_action(action):
     return (front_back, action[1], action[2])
 
 class Rangierer():
-    def __init__(self, w=.19, f=.33, b=.05, r=.658, p=.05, l=.45):
+    def __init__(self, w=.19, f=.33, b=.05, r=.658, p=.05, l=.45, verbose=False):
+        self.verbose = verbose
         self.w = w
         self.f = f
         self.b = b
@@ -43,17 +44,17 @@ class Rangierer():
         self.einpark_actions = [angle_to_distance(translate_action(action),self.r) for action in self.einpark_actions]
         self.einpark_actions.insert(0, ("vorwärts", "geradeaus", final_x))
         self.auspark_actions = [angle_to_distance(action, self.r) for action in self.actions]
-    
+        
     def calculate_actions(self):
         car_pos_nach_rangieren, alpha_nach_rangieren = rangier_vorwaerts(
-            self.car_pos, 0, self.r, self.p_VA, self.p_HA, self.f, self.w, self.b, self.actions)
+            self.car_pos, 0, self.r, self.p_VA, self.p_HA, self.f, self.w, self.b, self.actions, self.verbose)
 
-        print(
-            f"car_pos_nach_rangieren: {car_pos_nach_rangieren}, alpha_nach_rangieren: {alpha_nach_rangieren}")
+        # print(
+        #     f"car_pos_nach_rangieren: {car_pos_nach_rangieren}, alpha_nach_rangieren: {alpha_nach_rangieren}")
         x_final, y_final = ausparkvorgang(
             car_pos_nach_rangieren, alpha_nach_rangieren, self.r, self.p_VA, self.f, self.w, self.b, 0, self.actions)
 
-        print(f"x_final: {x_final}")
+        # print(f"x_final: {x_final}")
         return x_final
         
     

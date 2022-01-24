@@ -89,7 +89,7 @@ def finde_links_fahr_winkel_beim_ausparken(car_pos, alpha, car_rad, p_VA, w):
     upper_circle_center = center_of_circle(
         car_rad, alpha, car_pos, "forward")
 
-    print(f"first intersection {first_intersection}")
+    # print(f"first intersection {first_intersection}")
     if len(first_intersection) != 2:
         print("Dangerzone! Es sollte am Anfang schon zwei Überschneidungen geben")
     for possible_alpha in np.linspace(alpha, 0.5*math.pi, 100):
@@ -111,10 +111,10 @@ def finde_links_fahr_winkel_beim_ausparken(car_pos, alpha, car_rad, p_VA, w):
         intersection = circle_intersection(
             p_VA[0], p_VA[1], w/2, lower_circle_mid[0], lower_circle_mid[1], car_rad)
         if len(intersection) == 1:
-            print(f"FOUND IT!{possible_alpha}")
+            # print(f"FOUND IT!{possible_alpha}")
             return car_pos, possible_alpha
         
-    print("nope")
+    print("Konnte nicht den richtigen Winkel zum Ausparken finde. Ab jetzt wirds holprig (ich garantiere für nichts mehr).")
     ...
 
 

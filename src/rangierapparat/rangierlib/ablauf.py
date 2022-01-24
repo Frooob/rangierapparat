@@ -1,6 +1,5 @@
 # from fsolvetest import *
 from scipy.optimize.minpack import fsolve
-import numpy as np
 from .fsolver import alpha_verschiebung_hinten_links, dist_func_to_minimize, ecke_vorne_rechts, ecke_hinten_links, center_of_circle, alpha_verschiebung_vorne_rechts, radius_ecke_hinten_links, radius_ecke_vorne_rechts
 import math
 """
@@ -28,9 +27,10 @@ Berechne, ob es möglich ist, so weit zu fahren, ohne mit der hinteren linken Ec
 """
 
 
-def rangier_vorwaerts(car_pos, alpha, car_rad, p_VA, p_HA, f, w, b, actions):
-    print(
-        f"\nRangiere Vorwärts mit car_pos: {car_pos}, alpha: {alpha} ({math.degrees(alpha)}°)")
+def rangier_vorwaerts(car_pos, alpha, car_rad, p_VA, p_HA, f, w, b, actions, verbose = False):
+    if verbose:
+        print(
+            f"\nRangiere Vorwärts mit car_pos: {car_pos}, alpha: {alpha} ({math.degrees(alpha)}°)")
 
     outer_front_car_rad = radius_ecke_vorne_rechts(car_rad, f, w)
     x_vorne_rechts_new, y_vorne_rechts_new, alpha_vorne_rechts_new = pos_und_alpha_vordere_rechte_ecke_so_weit_wie_möglich(
@@ -41,7 +41,8 @@ def rangier_vorwaerts(car_pos, alpha, car_rad, p_VA, p_HA, f, w, b, actions):
     # TODO: Das ganze hier doch als Klasse schreiben, die Parameter nerven doch hart...
     # print(y_vorne_rechts_new, p_VA[1])
     if y_vorne_rechts_new >= p_VA[1]:  # Hier muss evtl statt y_vr y_auto hin!
-        print("Yey, man kann ausparken, mache ich jetzt auch.")
+        if verbose:
+            print("Yey, man kann ausparken, mache ich jetzt auch.")
         return car_pos, alpha
         ...  # Fahr raus, break!
     else:
@@ -51,20 +52,22 @@ def rangier_vorwaerts(car_pos, alpha, car_rad, p_VA, p_HA, f, w, b, actions):
         y_new = upper_circle_center[1] + car_rad * math.sin(alpha_new)
         alpha_new_my_system = alpha_new - 1.5*math.pi
         delta_alpha = alpha_new - 1.5 * math.pi - alpha
-        print(
-            f"Nach dem vorwärts rangieren wird das Auto den Winkel: {alpha_new_my_system} ({math.degrees(alpha_new_my_system)}°) haben. Es hat sich demnach um {delta_alpha} ({math.degrees(delta_alpha)}°) bewegt. Es steht nun an der Position ({x_new}, {y_new}).")
+        if verbose:
+            print(
+                f"Nach dem vorwärts rangieren wird das Auto den Winkel: {alpha_new_my_system} ({math.degrees(alpha_new_my_system)}°) haben. Es hat sich demnach um {delta_alpha} ({math.degrees(delta_alpha)}°) bewegt. Es steht nun an der Position ({x_new}, {y_new}).")
 
         actions.append(("vorwärts", "links", delta_alpha))
         return rangier_rueckwaerts((x_new, y_new), alpha_new_my_system,
                                    car_rad, p_VA, p_HA, f, w, b, actions)
 
 
-def rangier_rueckwaerts(car_pos, alpha, car_rad, p_VA, p_HA, f, w, b, actions):
+def rangier_rueckwaerts(car_pos, alpha, car_rad, p_VA, p_HA, f, w, b, actions, verbose = False):
     """
     1. Berechne, wie weit man rückwärts fahren müsste, um vorwärts rauskommen zu können.
     """
-    print(
-        f"\nRangiere rückwärts mit car_pos: {car_pos}, alpha: {alpha}({math.degrees(alpha)}°)")
+    if verbose:
+        print(
+            f"\nRangiere rückwärts mit car_pos: {car_pos}, alpha: {alpha}({math.degrees(alpha)}°)")
 
     lower_circle_center = center_of_circle(car_rad, alpha, car_pos, "backward")
     # print(f"Der lower circle center liegt bei: {lower_circle_center}")
@@ -90,20 +93,20 @@ def rangier_rueckwaerts(car_pos, alpha, car_rad, p_VA, p_HA, f, w, b, actions):
 
     # Man kann so weit zurücksetzen wie gewünscht. Beende die Rekursion
     if potentielle_hintere_linke_ecke[0] > p_HA[0]:
-        print(
-            f"Nach dem Rückwärts rangieren wird das Auto den Winkel: {alpha_new} ({math.degrees(alpha_new)}°) haben. Es hat sich demnach um {delta_alpha} ({math.degrees(delta_alpha)}°) bewegt. Es steht nun an der Position: ({x_new}, {y_new})")
+        if verbose:
+            print(
+                f"Nach dem Rückwärts rangieren wird das Auto den Winkel: {alpha_new} ({math.degrees(alpha_new)}°) haben. Es hat sich demnach um {delta_alpha} ({math.degrees(delta_alpha)}°) bewegt. Es steht nun an der Position: ({x_new}, {y_new})")
         actions.append(("rückwärts", "rechts", delta_alpha))
         return rangier_vorwaerts((x_new, y_new), alpha_new, car_rad, p_VA, p_HA, f, w, b, actions)
-
-    print(
-        f"Leider kann ich nicht so weit zurückfahren, wie ich gerne würde {potentielle_hintere_linke_ecke[1]} < {p_HA[0]}...")
+    if verbose:
+        print(
+            f"Leider kann ich nicht so weit zurückfahren, wie ich gerne würde {potentielle_hintere_linke_ecke[1]} < {p_HA[0]}...")
     # Fahre nur soweit zurück, bis das p_HA[0] erreicht wird.
     # TODO: Die Position der potentiellen hinteren linken Ecke validieren!
     outer_back_car_rad = radius_ecke_hinten_links(car_rad, b, w)
     x_hinten_links_new, y_hinten_links_new, alpha_hinten_links_new = pos_und_alpha_hintere_linke_ecke_so_weit_wie_möglich(
         car_rad, outer_back_car_rad, car_pos, alpha, p_HA[0])
 
-    print("alphahintenlinisnew", alpha_hinten_links_new)
     alpha_new = alpha_hinten_links_new + \
         alpha_verschiebung_hinten_links(car_rad, b, w)
     x_new = lower_circle_center[0] + car_rad * math.cos(alpha_new)
@@ -112,10 +115,9 @@ def rangier_rueckwaerts(car_pos, alpha, car_rad, p_VA, p_HA, f, w, b, actions):
     alpha_new_my_system = alpha_new - 0.5 * math.pi
     delta_alpha = alpha_new_my_system - alpha
 
-    # print(outer_back_car_rad, x_hinten_links_new, y_hinten_links_new, alpha_hinten_links_new, math.degrees(alpha_hinten_links_new))
-
-    print(
-        f"Nach dem Rückwärts SOWEIT WIE MÖGLICH rangieren wird das Auto den Winkel: {alpha_new_my_system} ({math.degrees(alpha_new_my_system)}°) haben. Es hat sich demnach um {delta_alpha} ({math.degrees(delta_alpha)}°) bewegt. Es steht nun an der Position: ({x_new}, {y_new})")
+    if verbose:
+        print(
+            f"Nach dem Rückwärts SOWEIT WIE MÖGLICH rangieren wird das Auto den Winkel: {alpha_new_my_system} ({math.degrees(alpha_new_my_system)}°) haben. Es hat sich demnach um {delta_alpha} ({math.degrees(delta_alpha)}°) bewegt. Es steht nun an der Position: ({x_new}, {y_new})")
     actions.append(("rückwärts", "rechts", delta_alpha))
     return rangier_vorwaerts((x_new, y_new), alpha_new_my_system,
                              car_rad, p_VA, p_HA, f, w, b, actions)
